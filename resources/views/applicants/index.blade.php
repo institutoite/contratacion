@@ -103,12 +103,18 @@
                             <th>Fecha</th>
                             <th>Hora</th>
                             <th>Estado</th>
-                            <th>Reserva</th>
+                            <th>Agendados</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($interviewSlots as $slot)
+                            @php
+                                $bookingsCount = \App\Models\ApplicantInterview::query()
+                                    ->whereDate('interview_date', $slot->interview_date)
+                                    ->where('interview_time', $slot->interview_time)
+                                    ->count();
+                            @endphp
                             <tr>
                                 <td>{{ $slot->interview_date->format('d/m/Y') }}</td>
                                 <td>{{ \Illuminate\Support\Str::of($slot->interview_time)->substr(0, 5) }}</td>
@@ -120,10 +126,10 @@
                                     @endif
                                 </td>
                                 <td>
-                                    @if($slot->bookedApplicant)
-                                        <span class="text-body-secondary">Reservado por: {{ $slot->bookedApplicant->full_name }}</span>
+                                    @if($bookingsCount > 0)
+                                        <span class="text-body-secondary">{{ $bookingsCount }} postulante(s)</span>
                                     @else
-                                        <span class="text-success">Disponible</span>
+                                        <span class="text-success">Sin agendados</span>
                                     @endif
                                 </td>
                                 <td>

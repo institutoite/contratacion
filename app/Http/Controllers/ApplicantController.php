@@ -23,7 +23,6 @@ class ApplicantController extends Controller
             'applicants' => $query->paginate(15)->withQueryString(),
             'positions' => Position::query()->orderBy('name')->get(),
             'interviewSlots' => InterviewSlot::query()
-                ->with('bookedApplicant')
                 ->orderByDesc('interview_date')
                 ->orderByDesc('interview_time')
                 ->paginate(10, ['*'], 'slots_page')

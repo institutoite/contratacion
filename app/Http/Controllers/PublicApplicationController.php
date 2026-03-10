@@ -68,7 +68,7 @@ class PublicApplicationController extends Controller
                 ->lockForUpdate()
                 ->findOrFail($validated['interview_slot_id']);
 
-            if (!$slot->is_active || $slot->booked_applicant_id !== null || $slot->interview_date->lt(today())) {
+            if (!$slot->is_active || $slot->interview_date->lt(today())) {
                 throw ValidationException::withMessages([
                     'interview_slot_id' => 'La fecha y hora seleccionada ya no esta disponible. Elige otra opcion.',
                 ]);
@@ -109,9 +109,6 @@ class PublicApplicationController extends Controller
                 ],
             ]);
 
-            $slot->update([
-                'booked_applicant_id' => $applicant->id,
-            ]);
         });
 
         return redirect()

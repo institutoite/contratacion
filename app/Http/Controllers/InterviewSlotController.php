@@ -33,12 +33,6 @@ class InterviewSlotController extends Controller
 
     public function toggle(InterviewSlot $interviewSlot): RedirectResponse
     {
-        if ($interviewSlot->booked_applicant_id) {
-            return back()->withErrors([
-                'slot' => 'No se puede cambiar el estado de un horario que ya fue reservado.',
-            ]);
-        }
-
         $interviewSlot->update([
             'is_active' => !$interviewSlot->is_active,
         ]);
@@ -48,12 +42,6 @@ class InterviewSlotController extends Controller
 
     public function destroy(InterviewSlot $interviewSlot): RedirectResponse
     {
-        if ($interviewSlot->booked_applicant_id) {
-            return back()->withErrors([
-                'slot' => 'No se puede eliminar un horario ya reservado por un postulante.',
-            ]);
-        }
-
         $interviewSlot->delete();
 
         return back()->with('success', 'Horario eliminado.');
