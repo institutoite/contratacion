@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Applicant;
 use App\Models\ApplicantAttachment;
+use App\Models\InterviewSlot;
 use App\Models\Position;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
 
@@ -20,6 +22,12 @@ class ApplicantController extends Controller
         return view('applicants.index', [
             'applicants' => $query->paginate(15)->withQueryString(),
             'positions' => Position::query()->orderBy('name')->get(),
+            'interviewSlots' => InterviewSlot::query()
+                ->with('bookedApplicant')
+                ->orderByDesc('interview_date')
+                ->orderByDesc('interview_time')
+                ->paginate(10, ['*'], 'slots_page')
+                ->withQueryString(),
             'statuses' => Applicant::STATUSES,
             'ratings' => [1, 2, 3, 4, 5],
             'filters' => $request->all(),
@@ -258,11 +266,52 @@ class ApplicantController extends Controller
         return back()->with('success', 'Estado del cargo actualizado.');
     }
 
+    public function storePosition(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:positions,name'],
+        ]);
+
+        Position::query()->create([
+            'name' => $validated['name'],
+            'is_active' => true,
+        ]);
+
+        return back()->with('success', 'Cargo creado correctamente.');
+    }
+
+    public function updatePosition(Request $request, Position $position)
+    {
+        $validated = $request->validate([
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('positions', 'name')->ignore($position->id),
+            ],
+        ]);
+
+        $position->update([
+            'name' => $validated['name'],
+        ]);
+
+        return back()->with('success', 'Cargo actualizado correctamente.');
+    }
+
+    public function destroyPosition(Position $position)
+    {
+        $position->delete();
+
+        return back()->with('success', 'Cargo eliminado correctamente.');
+    }
+
     private function validateApplicant(Request $request): array
     {
         return $request->validate([
             'position_id' => ['nullable', 'exists:positions,id'],
             'full_name' => ['required', 'string', 'max:255'],
+            'gender' => ['nullable', 'in:hombre,mujer'],
+            'motivation_text' => ['nullable', 'string'],
             'identity_number' => ['nullable', 'string', 'max:100'],
             'birth_date' => ['nullable', 'date'],
             'age' => ['nullable', 'integer', 'between:14,100'],

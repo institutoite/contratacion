@@ -10,6 +10,14 @@
             <input type="text" name="full_name" class="form-control" value="{{ old('full_name', $applicant->full_name) }}" required>
         </div>
         <div class="col-md-3">
+            <label class="form-label">Genero</label>
+            <select name="gender" class="form-select">
+                <option value="">Seleccionar</option>
+                <option value="hombre" @selected(old('gender', $applicant->gender) === 'hombre')>Hombre</option>
+                <option value="mujer" @selected(old('gender', $applicant->gender) === 'mujer')>Mujer</option>
+            </select>
+        </div>
+        <div class="col-md-3">
             <label class="form-label">Cedula de identidad</label>
             <input type="text" name="identity_number" class="form-control" value="{{ old('identity_number', $applicant->identity_number) }}">
         </div>
@@ -108,6 +116,10 @@
         <div class="col-md-4">
             <label class="form-label">Medio donde conocio la vacante</label>
             <input type="text" name="vacancy_source" class="form-control" value="{{ old('vacancy_source', $applicant->vacancy_source) }}">
+        </div>
+        <div class="col-12">
+            <label class="form-label">Por que le gustaria trabajar con nosotros</label>
+            <textarea name="motivation_text" class="form-control" rows="2">{{ old('motivation_text', $applicant->motivation_text) }}</textarea>
         </div>
         <div class="col-md-4">
             <label class="form-label">Experiencia previa</label>

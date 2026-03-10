@@ -27,6 +27,7 @@
                 <div class="card-header fw-semibold">Datos principales</div>
                 <div class="card-body row">
                     <div class="col-md-6">
+                        <p class="mb-1"><strong>Genero:</strong> {{ $applicant->gender ?: '-' }}</p>
                         <p class="mb-1"><strong>Cedula:</strong> {{ $applicant->identity_number ?: '-' }}</p>
                         <p class="mb-1"><strong>Nacimiento:</strong> {{ optional($applicant->birth_date)->format('d/m/Y') ?: '-' }}</p>
                         <p class="mb-1"><strong>Edad:</strong> {{ $applicant->age ?: '-' }}</p>
@@ -54,6 +55,7 @@
                 <p class="mb-1"><strong>Horario:</strong> {{ $applicant->availability_schedule ?: '-' }}</p>
                 <p class="mb-1"><strong>Pretension salarial:</strong> {{ $applicant->salary_expectation ?: '-' }}</p>
                 <p class="mb-1"><strong>Conocio por:</strong> {{ $applicant->vacancy_source ?: '-' }}</p>
+                <p class="mb-1"><strong>Motivacion:</strong> {{ $applicant->motivation_text ?: '-' }}</p>
                 <p class="mb-1"><strong>Experiencia previa:</strong> {{ is_null($applicant->has_experience) ? '-' : ($applicant->has_experience ? 'Si' : 'No') }}</p>
                 <p class="mb-1"><strong>Anios experiencia:</strong> {{ $applicant->experience_years ?: '-' }}</p>
                 <p class="mb-0"><strong>Portafolio:</strong> @if($applicant->portfolio_link)<a href="{{ $applicant->portfolio_link }}" target="_blank">{{ $applicant->portfolio_link }}</a>@else - @endif</p>

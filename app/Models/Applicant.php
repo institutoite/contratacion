@@ -27,6 +27,7 @@ class Applicant extends Model
     protected $fillable = [
         'position_id',
         'full_name',
+        'gender',
         'identity_number',
         'birth_date',
         'age',
@@ -38,6 +39,7 @@ class Applicant extends Model
         'reference_name',
         'reference_phone',
         'reference_relationship',
+        'motivation_text',
         'application_date',
         'work_modality',
         'availability_schedule',

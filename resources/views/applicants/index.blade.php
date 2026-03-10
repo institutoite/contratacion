@@ -10,28 +10,149 @@
     </div>
 
     <div class="card mb-3">
-        <div class="card-header fw-semibold">Cargos y disponibilidad</div>
+        <div class="card-header fw-semibold">CRUD de cargos</div>
         <div class="card-body">
-            <div class="row g-2">
-                @foreach($positions as $position)
-                    <div class="col-md-4">
-                        <div class="border rounded p-2 d-flex justify-content-between align-items-center">
-                            <div>
-                                <div class="fw-semibold">{{ $position->name }}</div>
-                                <small class="{{ $position->is_active ? 'text-success' : 'text-danger' }}">
-                                    {{ $position->is_active ? 'Habilitado' : 'Deshabilitado' }}
-                                </small>
-                            </div>
-                            <form method="POST" action="{{ route('positions.toggle', $position) }}">
-                                @csrf
-                                @method('PATCH')
-                                <button class="btn btn-sm {{ $position->is_active ? 'btn-outline-danger' : 'btn-outline-success' }}">
-                                    {{ $position->is_active ? 'Deshabilitar' : 'Habilitar' }}
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                @endforeach
+            <form class="row g-2 mb-3" method="POST" action="{{ route('positions.store') }}">
+                @csrf
+                <div class="col-md-8">
+                    <label class="form-label">Nuevo cargo</label>
+                    <input type="text" name="name" class="form-control" placeholder="Ejemplo: Analista de admisiones" required>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100">Agregar cargo</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Cargo</th>
+                            <th>Estado</th>
+                            <th style="min-width: 360px;">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($positions as $position)
+                            <tr>
+                                <td>
+                                    <form method="POST" action="{{ route('positions.update', $position) }}" class="d-flex gap-2">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="text" name="name" class="form-control form-control-sm" value="{{ $position->name }}" required>
+                                        <button class="btn btn-sm btn-outline-primary">Guardar</button>
+                                    </form>
+                                </td>
+                                <td>
+                                    @if($position->is_active)
+                                        <span class="badge text-bg-success">Activo</span>
+                                    @else
+                                        <span class="badge text-bg-secondary">Inactivo</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <form method="POST" action="{{ route('positions.toggle', $position) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm {{ $position->is_active ? 'btn-outline-warning' : 'btn-outline-success' }}">
+                                                {{ $position->is_active ? 'Desactivar' : 'Activar' }}
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ route('positions.destroy', $position) }}" onsubmit="return confirm('Eliminar cargo?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="3" class="text-center py-3">No hay cargos registrados.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header fw-semibold">Horarios de entrevistas (landing publica)</div>
+        <div class="card-body">
+            <form class="row g-2 mb-3" method="POST" action="{{ route('interview-slots.store') }}">
+                @csrf
+                <div class="col-md-4">
+                    <label class="form-label">Fecha</label>
+                    <input type="date" name="interview_date" class="form-control" required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Hora</label>
+                    <input type="time" name="interview_time" class="form-control" required>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button class="btn btn-primary w-100">Agregar horario</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table class="table table-sm table-striped align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Estado</th>
+                            <th>Reserva</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($interviewSlots as $slot)
+                            <tr>
+                                <td>{{ $slot->interview_date->format('d/m/Y') }}</td>
+                                <td>{{ \Illuminate\Support\Str::of($slot->interview_time)->substr(0, 5) }}</td>
+                                <td>
+                                    @if($slot->is_active)
+                                        <span class="badge text-bg-success">Activo</span>
+                                    @else
+                                        <span class="badge text-bg-secondary">Inactivo</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($slot->bookedApplicant)
+                                        <span class="text-body-secondary">Reservado por: {{ $slot->bookedApplicant->full_name }}</span>
+                                    @else
+                                        <span class="text-success">Disponible</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <form method="POST" action="{{ route('interview-slots.toggle', $slot) }}">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-sm {{ $slot->is_active ? 'btn-outline-warning' : 'btn-outline-success' }}">
+                                                {{ $slot->is_active ? 'Desactivar' : 'Activar' }}
+                                            </button>
+                                        </form>
+                                        <form method="POST" action="{{ route('interview-slots.destroy', $slot) }}" onsubmit="return confirm('Eliminar horario?')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="text-center py-3">Aun no se registraron horarios de entrevista.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-2">
+                {{ $interviewSlots->links() }}
             </div>
         </div>
     </div>
