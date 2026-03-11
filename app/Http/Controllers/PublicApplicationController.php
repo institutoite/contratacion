@@ -18,9 +18,18 @@ class PublicApplicationController extends Controller
 {
     public function index(Request $request): View
     {
-        $validated = $request->validate([
-            'search' => ['nullable', 'string', 'regex:/^[0-9]+$/', 'max:20'],
-        ]);
+        $validated = $request->validate(
+            [
+                'search' => ['nullable', 'string', 'regex:/^[0-9]+$/', 'max:20'],
+            ],
+            [
+                'search.regex' => 'El campo :attribute solo debe contener números.',
+                'search.max' => 'El campo :attribute no debe superar :max caracteres.',
+            ],
+            [
+                'search' => 'búsqueda',
+            ]
+        );
 
         $slots = collect();
         $positions = collect();
@@ -74,18 +83,40 @@ class PublicApplicationController extends Controller
         ]);
     }
 
-    public function store(): RedirectResponse
+    public function store(Request $request): RedirectResponse
     {
-        $validated = request()->validate([
-            'full_name' => ['required', 'string', 'max:255'],
-            'gender' => ['required', 'in:hombre,mujer'],
-            'position_id' => ['required', 'integer', 'exists:positions,id'],
-            'address' => ['required', 'string'],
-            'primary_phone' => ['required', 'string', 'max:100'],
-            'reference_phone' => ['required', 'string', 'max:100'],
-            'motivation_text' => ['required', 'string', 'max:2000'],
-            'interview_slot_id' => ['required', 'integer', 'exists:interview_slots,id'],
-        ]);
+        $validated = $request->validate(
+            [
+                'full_name' => ['required', 'string', 'max:255'],
+                'gender' => ['required', 'in:hombre,mujer'],
+                'position_id' => ['required', 'integer', 'exists:positions,id'],
+                'address' => ['required', 'string'],
+                'primary_phone' => ['required', 'string', 'max:100'],
+                'reference_phone' => ['required', 'string', 'max:100'],
+                'motivation_text' => ['required', 'string', 'max:2000'],
+                'interview_slot_id' => ['required', 'integer', 'exists:interview_slots,id'],
+                'form_source' => ['nullable', 'in:fixed,modal'],
+            ],
+            [
+                'required' => 'El campo :attribute es obligatorio.',
+                'string' => 'El campo :attribute debe ser un texto válido.',
+                'integer' => 'El campo :attribute debe ser un número entero.',
+                'exists' => 'El valor seleccionado en :attribute no es válido.',
+                'in' => 'El valor seleccionado en :attribute no es válido.',
+                'max.string' => 'El campo :attribute no debe superar :max caracteres.',
+            ],
+            [
+                'full_name' => 'nombre completo',
+                'gender' => 'género',
+                'position_id' => 'cargo',
+                'address' => 'dirección',
+                'primary_phone' => 'teléfono',
+                'reference_phone' => 'teléfono de referencia',
+                'motivation_text' => 'motivación',
+                'interview_slot_id' => 'fecha y hora de entrevista',
+                'form_source' => 'formulario',
+            ]
+        );
 
         $applicant = DB::transaction(function () use ($validated): Applicant {
             $position = Position::query()
@@ -151,10 +182,14 @@ class PublicApplicationController extends Controller
             'applicant' => $applicant->id,
         ]);
 
+        $formSource = $validated['form_source'] ?? 'fixed';
+        $targetHash = $formSource === 'modal' ? '#applyModal' : '#fixed-apply';
+
         return redirect()
-            ->route('welcome')
+            ->to(route('welcome') . $targetHash)
             ->with('success', 'Tu registro fue enviado. Te esperamos en la fecha y hora seleccionada.')
-            ->with('print_url', $printUrl);
+            ->with('print_url', $printUrl)
+            ->with('form_source', $formSource);
     }
 
     public function print(Applicant $applicant): Response

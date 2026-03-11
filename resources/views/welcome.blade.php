@@ -65,6 +65,33 @@
             color: rgb(55, 95, 122);
             margin-bottom: 0.15rem;
         }
+        .stat-card.total-sticker {
+            position: relative;
+            border: 2px solid rgba(38, 186, 165, 0.55);
+            background: linear-gradient(135deg, rgba(38, 186, 165, 0.2), rgba(55, 95, 122, 0.12));
+            box-shadow: 0 12px 28px rgba(38, 186, 165, 0.22);
+        }
+
+        .sticker-badge {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            background: #ff3b30;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .stat-value.total-count {
+            font-size: clamp(2rem, 4vw, 2.8rem);
+            line-height: 1;
+            color: #0f1720;
+            margin-bottom: 0.35rem;
+        }
 
         .hero-panel {
             border-radius: 20px;
@@ -163,31 +190,15 @@
                             <div class="stat-value">Entorno profesional</div>
                             <small class="text-body-secondary">Cultura de mejora y aprendizaje continuo</small>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value">{{ number_format($totalApplicants ?? 0) }}</div>
+                        <div class="stat-card total-sticker">
+                            <span class="sticker-badge">Nuevo</span>
+                            <div class="stat-value total-count">{{ number_format($totalApplicants ?? 0) }}</div>
                             <small class="text-body-secondary">Postulantes registrados hasta ahora</small>
                         </div>
                     </div>
-                    @if(session('success'))
-                        <div class="alert alert-success mt-4 mb-0">
-                            <div>{{ session('success') }}</div>
-                            @if(session('print_url'))
-                                <div class="mt-2">
-                                    <a href="{{ session('print_url') }}" target="_blank" class="btn btn-sm btn-outline-success">
-                                        Imprimir mi registro
-                                    </a>
-                                </div>
-                            @endif
-                        </div>
-                    @endif
-                    @if($errors->any())
+                    @if($errors->any() && old('form_source'))
                         <div class="alert alert-app mt-4 mb-0">
-                            <strong>Revisa los datos del formulario:</strong>
-                            <ul class="mb-0 mt-2">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
+                            <strong>Revisa los campos marcados en rojo en el formulario.</strong>
                         </div>
                     @endif
                 </div>
@@ -210,10 +221,16 @@
                     <h2 class="h3 mb-0">Buscar mi registro</h2>
                     <small class="text-body-secondary">Busca solo por numero de telefono y luego imprime tu registro.</small>
                 </div>
+                <div class="alert alert-success py-2 px-3 mb-3">
+                    Puedes imprimir las veces que quieras desde esta seccion.
+                </div>
 
                 <form method="GET" action="{{ route('welcome') }}" class="row g-2 mb-3">
                     <div class="col-md-10">
-                        <input type="tel" inputmode="numeric" pattern="[0-9]+" name="search" class="form-control" value="{{ $searchTerm ?? '' }}" placeholder="Ejemplo: 70012345">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]+" name="search" class="form-control @error('search') is-invalid @enderror" value="{{ $searchTerm ?? '' }}" placeholder="Ejemplo: 70012345">
+                        @error('search')
+                            <div class="invalid-feedback d-block text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">Buscar</button>
@@ -254,7 +271,7 @@
                 @endif
             </div>
 
-            <div class="section-card p-4 p-md-5">
+            <div class="section-card p-4 p-md-5" id="fixed-apply">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <h2 class="h3 mb-0">Registro directo de entrevista</h2>
                     <small class="text-body-secondary">Tambien disponible desde el boton "Quiero trabajar".</small>
@@ -295,6 +312,9 @@
             const modal = document.getElementById('applyModal');
             const openButtons = document.querySelectorAll('[data-open-apply]');
             const closeButtons = document.querySelectorAll('[data-close-apply]');
+            const hasModalErrors = @json($errors->any() && old('form_source') === 'modal');
+            const hasModalSuccess = @json(session('success') && session('form_source') === 'modal');
+
 
             function openModal() {
                 modal.classList.add('open');
@@ -322,6 +342,10 @@
                     closeModal();
                 }
             });
+
+            if (hasModalErrors || hasModalSuccess) {
+                openModal();
+            }
         })();
     </script>
 </body>
