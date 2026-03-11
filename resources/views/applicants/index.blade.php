@@ -168,7 +168,7 @@
         <div class="card-body">
             <form class="row g-2" method="GET" action="{{ route('applicants.index') }}">
                 <div class="col-md-4">
-                    <input type="text" class="form-control" name="q" value="{{ $filters['q'] ?? '' }}" placeholder="Nombre, telefono, cargo o correo">
+                    <input type="text" class="form-control" name="search" value="{{ $filters['search'] ?? ($filters['q'] ?? '') }}" placeholder="Buscar por nombre o telefono">
                 </div>
                 <div class="col-md-2">
                     <select class="form-select" name="position_id">
@@ -263,6 +263,7 @@
                                 <td>
                                     <div class="d-flex gap-1">
                                         <a href="{{ route('applicants.show', $applicant) }}" class="btn btn-sm btn-outline-info">Ver</a>
+                                        <a href="{{ route('applicants.print', $applicant) }}" class="btn btn-sm btn-outline-primary" target="_blank">PDF</a>
                                         <a href="{{ route('applicants.edit', $applicant) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
                                         <form method="POST" action="{{ route('applicants.destroy', $applicant) }}" onsubmit="return confirm('Eliminar postulante?')">
                                             @csrf

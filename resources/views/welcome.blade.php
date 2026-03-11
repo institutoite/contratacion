@@ -95,6 +95,19 @@
             display: flex;
         }
 
+        .map-card {
+            border-radius: 18px;
+            border: 1px solid rgba(55, 95, 122, 0.2);
+            background: #ffffff;
+            box-shadow: 0 12px 30px rgba(55, 95, 122, 0.12);
+        }
+
+        .map-frame {
+            width: 100%;
+            min-height: 340px;
+            border: 0;
+            border-radius: 12px;
+        }
         .custom-modal {
             width: 100%;
             max-width: 780px;
@@ -152,7 +165,16 @@
                         </div>
                     </div>
                     @if(session('success'))
-                        <div class="alert alert-success mt-4 mb-0">{{ session('success') }}</div>
+                        <div class="alert alert-success mt-4 mb-0">
+                            <div>{{ session('success') }}</div>
+                            @if(session('print_url'))
+                                <div class="mt-2">
+                                    <a href="{{ session('print_url') }}" target="_blank" class="btn btn-sm btn-outline-success">
+                                        Imprimir mi registro
+                                    </a>
+                                </div>
+                            @endif
+                        </div>
                     @endif
                     @if($errors->any())
                         <div class="alert alert-app mt-4 mb-0">
@@ -179,12 +201,77 @@
         </header>
 
         <section class="container pb-5">
+            <div class="section-card p-4 p-md-5 mb-4">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h2 class="h3 mb-0">Buscar mi registro</h2>
+                    <small class="text-body-secondary">Busca por nombre o telefono y luego imprime tu registro.</small>
+                </div>
+
+                <form method="GET" action="{{ route('welcome') }}" class="row g-2 mb-3">
+                    <div class="col-md-10">
+                        <input type="text" name="search" class="form-control" value="{{ $searchTerm ?? '' }}" placeholder="Ejemplo: Maria Perez o 70012345">
+                    </div>
+                    <div class="col-md-2">
+                        <button type="submit" class="btn btn-primary w-100">Buscar</button>
+                    </div>
+                </form>
+
+                @if(!empty($searchTerm))
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nombre</th>
+                                    <th>Telefono</th>
+                                    <th>Cargo</th>
+                                    <th>Fecha</th>
+                                    <th>Impresion</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse($searchResults as $result)
+                                    <tr>
+                                        <td>{{ $result->full_name }}</td>
+                                        <td>{{ $result->primary_phone ?: '-' }}</td>
+                                        <td>{{ $result->position?->name ?: '-' }}</td>
+                                        <td>{{ optional($result->application_date)->format('d/m/Y') ?: '-' }}</td>
+                                        <td>
+                                            <a href="{{ $result->public_print_url }}" target="_blank" class="btn btn-sm btn-outline-primary">Imprimir</a>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3">No se encontraron registros para la busqueda.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                @endif
+            </div>
+
             <div class="section-card p-4 p-md-5">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <h2 class="h3 mb-0">Registro directo de entrevista</h2>
                     <small class="text-body-secondary">Tambien disponible desde el boton "Quiero trabajar".</small>
                 </div>
                 @include('partials.application-form', ['prefix' => 'fixed'])
+            </div>
+        </section>
+
+        <section class="container pb-5">
+            <div class="map-card p-4 p-md-5">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                    <h2 class="h3 mb-0">Nuestra ubicacion</h2>
+                    <small class="text-body-secondary">ITE (Central) - Santa Cruz</small>
+                </div>
+                <iframe
+                    class="map-frame"
+                    src="https://www.google.com/maps?q=-17.8020169,-63.136261&z=16&output=embed"
+                    loading="lazy"
+                    referrerpolicy="no-referrer-when-downgrade"
+                    allowfullscreen>
+                </iframe>
             </div>
         </section>
     </div>
@@ -235,5 +322,8 @@
     </script>
 </body>
 </html>
+
+
+
 
 

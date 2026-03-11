@@ -5,18 +5,24 @@ namespace App\Http\Controllers;
 use App\Models\Applicant;
 use App\Models\InterviewSlot;
 use App\Models\Position;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\Response;
 
 class PublicApplicationController extends Controller
 {
-    public function index(): View
+    public function index(Request $request): View
     {
         $slots = collect();
         $positions = collect();
+        $searchResults = collect();
+        $searchTerm = trim((string) $request->input('search', ''));
 
         try {
             $slots = InterviewSlot::query()
@@ -33,9 +39,34 @@ class PublicApplicationController extends Controller
             // Allows welcome page rendering even before migrations are executed.
         }
 
+        if ($searchTerm !== '') {
+            try {
+                $searchResults = Applicant::query()
+                    ->with('position')
+                    ->where(function ($query) use ($searchTerm): void {
+                        $query->where('full_name', 'like', '%' . $searchTerm . '%')
+                            ->orWhere('primary_phone', 'like', '%' . $searchTerm . '%');
+                    })
+                    ->latest()
+                    ->limit(20)
+                    ->get()
+                    ->map(function (Applicant $applicant) {
+                        $applicant->public_print_url = URL::signedRoute('applications.print', [
+                            'applicant' => $applicant->id,
+                        ]);
+
+                        return $applicant;
+                    });
+            } catch (QueryException) {
+                $searchResults = collect();
+            }
+        }
+
         return view('welcome', [
             'slots' => $slots,
             'positions' => $positions,
+            'searchTerm' => $searchTerm,
+            'searchResults' => $searchResults,
         ]);
     }
 
@@ -52,7 +83,7 @@ class PublicApplicationController extends Controller
             'interview_slot_id' => ['required', 'integer', 'exists:interview_slots,id'],
         ]);
 
-        DB::transaction(function () use ($validated): void {
+        $applicant = DB::transaction(function () use ($validated): Applicant {
             $position = Position::query()
                 ->whereKey($validated['position_id'])
                 ->where('is_active', true)
@@ -109,10 +140,35 @@ class PublicApplicationController extends Controller
                 ],
             ]);
 
+            return $applicant;
         });
+
+        $printUrl = URL::signedRoute('applications.print', [
+            'applicant' => $applicant->id,
+        ]);
 
         return redirect()
             ->route('welcome')
-            ->with('success', 'Tu registro fue enviado. Te esperamos en la fecha y hora seleccionada.');
+            ->with('success', 'Tu registro fue enviado. Te esperamos en la fecha y hora seleccionada.')
+            ->with('print_url', $printUrl);
+    }
+
+    public function print(Applicant $applicant): Response
+    {
+        $applicant->load(['position']);
+
+        $scheduledInterview = $applicant->interviews()
+            ->orderBy('interview_date')
+            ->orderBy('interview_time')
+            ->first();
+
+        $pdf = Pdf::loadView('pdf.public-application', [
+            'applicant' => $applicant,
+            'scheduledInterview' => $scheduledInterview,
+        ])->setPaper('letter');
+
+        $filename = 'comprobante-postulacion-' . $applicant->id . '.pdf';
+
+        return $pdf->stream($filename);
     }
 }

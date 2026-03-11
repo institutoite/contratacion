@@ -6,11 +6,13 @@ use App\Models\Applicant;
 use App\Models\ApplicantAttachment;
 use App\Models\InterviewSlot;
 use App\Models\Position;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class ApplicantController extends Controller
 {
@@ -71,6 +73,33 @@ class ApplicantController extends Controller
             'statuses' => Applicant::STATUSES,
             'ratings' => [1, 2, 3, 4, 5],
         ]);
+    }
+
+    public function printProfile(Applicant $applicant): HttpResponse
+    {
+        $applicant->load(['position']);
+
+        $scheduledInterview = $applicant->interviews()
+            ->whereDate('interview_date', '>=', now()->toDateString())
+            ->orderBy('interview_date')
+            ->orderBy('interview_time')
+            ->first();
+
+        if (!$scheduledInterview) {
+            $scheduledInterview = $applicant->interviews()
+                ->orderByDesc('interview_date')
+                ->orderByDesc('interview_time')
+                ->first();
+        }
+
+        $pdf = Pdf::loadView('pdf.applicant-profile', [
+            'applicant' => $applicant,
+            'scheduledInterview' => $scheduledInterview,
+        ])->setPaper('letter');
+
+        $filename = 'postulante-' . $applicant->id . '.pdf';
+
+        return $pdf->stream($filename);
     }
 
     public function edit(Applicant $applicant)
@@ -406,14 +435,13 @@ class ApplicantController extends Controller
 
     private function applyFilters($query, Request $request): void
     {
-        if ($request->filled('q')) {
-            $term = trim((string) $request->string('q'));
+        $search = trim((string) $request->input('search', $request->input('q', '')));
+        if ($search !== '') {
+            $term = $search;
             $query->where(function ($q) use ($term) {
                 $q->where('full_name', 'like', "%{$term}%")
                     ->orWhere('primary_phone', 'like', "%{$term}%")
-                    ->orWhere('whatsapp', 'like', "%{$term}%")
-                    ->orWhere('email', 'like', "%{$term}%")
-                    ->orWhereHas('position', fn ($pos) => $pos->where('name', 'like', "%{$term}%"));
+                    ->orWhere('whatsapp', 'like', "%{$term}%");
             });
         }
 

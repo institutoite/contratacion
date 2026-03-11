@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [PublicApplicationController::class, 'index'])->name('welcome');
 Route::post('/applications', [PublicApplicationController::class, 'store'])->name('applications.store');
+Route::get('/applications/{applicant}/print', [PublicApplicationController::class, 'print'])
+    ->middleware('signed')
+    ->name('applications.print');
 
 Route::middleware('guest')->group(function (): void {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
@@ -20,6 +23,7 @@ Route::middleware('auth')->group(function (): void {
     Route::redirect('/panel', '/applicants');
 
     Route::resource('applicants', ApplicantController::class);
+    Route::get('/applicants/{applicant}/print', [ApplicantController::class, 'printProfile'])->name('applicants.print');
     Route::patch('/applicants/{applicant}/quick-update', [ApplicantController::class, 'quickUpdate'])->name('applicants.quick-update');
     Route::post('/applicants/{applicant}/interviews', [ApplicantController::class, 'storeInterview'])->name('applicants.interviews.store');
     Route::get('/applicants-export', [ApplicantController::class, 'export'])->name('applicants.export');

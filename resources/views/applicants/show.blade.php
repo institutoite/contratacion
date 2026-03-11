@@ -4,6 +4,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1 class="h4 mb-0">{{ $applicant->full_name }}</h1>
         <div class="d-flex gap-2">
+            <a href="{{ route('applicants.print', $applicant) }}" class="btn btn-outline-primary btn-sm" target="_blank">Imprimir PDF</a>
             <a href="{{ route('applicants.edit', $applicant) }}" class="btn btn-outline-secondary btn-sm">Editar</a>
             <a href="{{ route('applicants.index') }}" class="btn btn-outline-dark btn-sm">Volver</a>
         </div>
