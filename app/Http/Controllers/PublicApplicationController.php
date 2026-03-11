@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Applicant;
 use App\Models\InterviewSlot;
 use App\Models\Position;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Database\QueryException;
@@ -19,10 +18,15 @@ class PublicApplicationController extends Controller
 {
     public function index(Request $request): View
     {
+        $validated = $request->validate([
+            'search' => ['nullable', 'string', 'regex:/^[0-9]+$/', 'max:20'],
+        ]);
+
         $slots = collect();
         $positions = collect();
         $searchResults = collect();
-        $searchTerm = trim((string) $request->input('search', ''));
+        $totalApplicants = 0;
+        $searchTerm = trim((string) ($validated['search'] ?? ''));
 
         try {
             $slots = InterviewSlot::query()
@@ -35,6 +39,8 @@ class PublicApplicationController extends Controller
                 ->where('is_active', true)
                 ->orderBy('name')
                 ->get();
+
+            $totalApplicants = Applicant::query()->count();
         } catch (QueryException) {
             // Allows welcome page rendering even before migrations are executed.
         }
@@ -43,10 +49,7 @@ class PublicApplicationController extends Controller
             try {
                 $searchResults = Applicant::query()
                     ->with('position')
-                    ->where(function ($query) use ($searchTerm): void {
-                        $query->where('full_name', 'like', '%' . $searchTerm . '%')
-                            ->orWhere('primary_phone', 'like', '%' . $searchTerm . '%');
-                    })
+                    ->where('primary_phone', 'like', '%' . $searchTerm . '%')
                     ->latest()
                     ->limit(20)
                     ->get()
@@ -67,6 +70,7 @@ class PublicApplicationController extends Controller
             'positions' => $positions,
             'searchTerm' => $searchTerm,
             'searchResults' => $searchResults,
+            'totalApplicants' => $totalApplicants,
         ]);
     }
 
@@ -162,13 +166,21 @@ class PublicApplicationController extends Controller
             ->orderBy('interview_time')
             ->first();
 
-        $pdf = Pdf::loadView('pdf.public-application', [
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView('pdf.public-application', [
+                'applicant' => $applicant,
+                'scheduledInterview' => $scheduledInterview,
+            ])->setPaper('letter');
+
+            $filename = 'comprobante-postulacion-' . $applicant->id . '.pdf';
+
+            return $pdf->stream($filename);
+        }
+
+        return response()->view('public.application-print', [
             'applicant' => $applicant,
             'scheduledInterview' => $scheduledInterview,
-        ])->setPaper('letter');
-
-        $filename = 'comprobante-postulacion-' . $applicant->id . '.pdf';
-
-        return $pdf->stream($filename);
+        ]);
     }
 }

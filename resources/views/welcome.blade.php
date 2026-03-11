@@ -163,6 +163,10 @@
                             <div class="stat-value">Entorno profesional</div>
                             <small class="text-body-secondary">Cultura de mejora y aprendizaje continuo</small>
                         </div>
+                        <div class="stat-card">
+                            <div class="stat-value">{{ number_format($totalApplicants ?? 0) }}</div>
+                            <small class="text-body-secondary">Postulantes registrados hasta ahora</small>
+                        </div>
                     </div>
                     @if(session('success'))
                         <div class="alert alert-success mt-4 mb-0">
@@ -204,12 +208,12 @@
             <div class="section-card p-4 p-md-5 mb-4">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
                     <h2 class="h3 mb-0">Buscar mi registro</h2>
-                    <small class="text-body-secondary">Busca por nombre o telefono y luego imprime tu registro.</small>
+                    <small class="text-body-secondary">Busca solo por numero de telefono y luego imprime tu registro.</small>
                 </div>
 
                 <form method="GET" action="{{ route('welcome') }}" class="row g-2 mb-3">
                     <div class="col-md-10">
-                        <input type="text" name="search" class="form-control" value="{{ $searchTerm ?? '' }}" placeholder="Ejemplo: Maria Perez o 70012345">
+                        <input type="tel" inputmode="numeric" pattern="[0-9]+" name="search" class="form-control" value="{{ $searchTerm ?? '' }}" placeholder="Ejemplo: 70012345">
                     </div>
                     <div class="col-md-2">
                         <button type="submit" class="btn btn-primary w-100">Buscar</button>
@@ -322,6 +326,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 

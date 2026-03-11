@@ -6,7 +6,6 @@ use App\Models\Applicant;
 use App\Models\ApplicantAttachment;
 use App\Models\InterviewSlot;
 use App\Models\Position;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\Rule;
@@ -92,14 +91,22 @@ class ApplicantController extends Controller
                 ->first();
         }
 
-        $pdf = Pdf::loadView('pdf.applicant-profile', [
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView('pdf.applicant-profile', [
+                'applicant' => $applicant,
+                'scheduledInterview' => $scheduledInterview,
+            ])->setPaper('letter');
+
+            $filename = 'postulante-' . $applicant->id . '.pdf';
+
+            return $pdf->stream($filename);
+        }
+
+        return response()->view('applicants.print', [
             'applicant' => $applicant,
             'scheduledInterview' => $scheduledInterview,
-        ])->setPaper('letter');
-
-        $filename = 'postulante-' . $applicant->id . '.pdf';
-
-        return $pdf->stream($filename);
+        ]);
     }
 
     public function edit(Applicant $applicant)
