@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Comprobante de postulacion</title>
+    <title>Comprobante de postulación</title>
     <style>
         @page { margin: 30px 32px; }
         body { font-family: DejaVu Sans, Arial, sans-serif; color: #1f2937; font-size: 12px; }
@@ -40,7 +40,7 @@
                     @endif
                 </td>
                 <td>
-                    <div class="title">Comprobante de Registro de Postulacion</div>
+                    <div class="title">Comprobante de Registro de Postulación</div>
                     <div class="subtitle">Generado el {{ now()->format('d/m/Y H:i') }}</div>
                 </td>
             </tr>
@@ -76,7 +76,7 @@
                     <td class="value">{{ $applicant->full_name }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Telefono</td>
+                    <td class="label">Teléfono</td>
                     <td class="value">{{ $applicant->primary_phone ?: '-' }}</td>
                 </tr>
                 <tr>
@@ -84,15 +84,15 @@
                     <td class="value">{{ $applicant->position?->name ?: '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Direccion</td>
+                    <td class="label">Dirección</td>
                     <td class="value">{{ $applicant->address ?: '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Telefono de referencia</td>
+                    <td class="label">Teléfono de referencia</td>
                     <td class="value">{{ $applicant->reference_phone ?: '-' }}</td>
                 </tr>
                 <tr>
-                    <td class="label">Motivacion</td>
+                    <td class="label">Motivación</td>
                     <td class="value">{{ $applicant->motivation_text ?: '-' }}</td>
                 </tr>
                 <tr>
@@ -104,7 +104,7 @@
     </div>
 
     <div class="footer">
-        Documento de uso informativo. Presentalo el dia de tu entrevista.
+        Documento de uso informativo. Preséntalo el día de tu entrevista.
     </div>
 </body>
 </html>

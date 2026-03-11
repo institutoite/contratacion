@@ -58,7 +58,7 @@
                 <strong>Estado</strong><br>{{ $applicant->status ?: '-' }}
             </td>
             <td>
-                <strong>Valoracion</strong><br>{{ $applicant->overall_rating ?: '-' }}
+                <strong>Valoración</strong><br>{{ $applicant->overall_rating ?: '-' }}
             </td>
         </tr>
     </table>
@@ -81,11 +81,11 @@
 
     <div class="section-title">Datos personales y contacto</div>
     <table class="kv">
-        <tr><td class="k">Cedula</td><td class="v">{{ $applicant->identity_number ?: '-' }}</td></tr>
-        <tr><td class="k">Telefono</td><td class="v">{{ $applicant->primary_phone ?: '-' }}</td></tr>
+        <tr><td class="k">Cédula</td><td class="v">{{ $applicant->identity_number ?: '-' }}</td></tr>
+        <tr><td class="k">Teléfono</td><td class="v">{{ $applicant->primary_phone ?: '-' }}</td></tr>
         <tr><td class="k">WhatsApp</td><td class="v">{{ $applicant->whatsapp ?: '-' }}</td></tr>
         <tr><td class="k">Correo</td><td class="v">{{ $applicant->email ?: '-' }}</td></tr>
-        <tr><td class="k">Direccion</td><td class="v">{{ $applicant->address ?: '-' }}</td></tr>
+        <tr><td class="k">Dirección</td><td class="v">{{ $applicant->address ?: '-' }}</td></tr>
         <tr><td class="k">Zona/Ciudad</td><td class="v">{{ $applicant->city_zone ?: '-' }}</td></tr>
     </table>
 
@@ -93,7 +93,7 @@
     <table class="kv">
         <tr><td class="k">Modalidad</td><td class="v">{{ $applicant->work_modality ?: '-' }}</td></tr>
         <tr><td class="k">Disponibilidad</td><td class="v">{{ $applicant->availability_schedule ?: '-' }}</td></tr>
-        <tr><td class="k">Pretension salarial</td><td class="v">{{ $applicant->salary_expectation ?: '-' }}</td></tr>
+        <tr><td class="k">Pretensión salarial</td><td class="v">{{ $applicant->salary_expectation ?: '-' }}</td></tr>
         <tr><td class="k">Nivel de estudios</td><td class="v">{{ $applicant->education_level ?: '-' }}</td></tr>
         <tr><td class="k">Experiencia</td><td class="v">{{ $applicant->experience_summary ?: '-' }}</td></tr>
         <tr><td class="k">Habilidades</td><td class="v">{{ $applicant->main_skills ?: '-' }}</td></tr>
