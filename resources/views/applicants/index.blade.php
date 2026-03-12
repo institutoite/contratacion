@@ -96,6 +96,11 @@
                 </div>
             </form>
 
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h3 class="h6 mb-0">Horarios disponibles</h3>
+                <small class="text-body-secondary">Cada horario incluye su reporte PDF</small>
+            </div>
+
             <div class="table-responsive">
                 <table class="table table-sm table-striped align-middle mb-0">
                     <thead>
@@ -134,6 +139,9 @@
                                 </td>
                                 <td>
                                     <div class="d-flex gap-1">
+                                        <a href="{{ route('interview-slots.report', $slot) }}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                            Reporte PDF
+                                        </a>
                                         <form method="POST" action="{{ route('interview-slots.toggle', $slot) }}">
                                             @csrf
                                             @method('PATCH')

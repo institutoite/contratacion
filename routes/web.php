@@ -37,6 +37,7 @@ Route::middleware('auth')->group(function (): void {
     Route::delete('/positions/{position}', [ApplicantController::class, 'destroyPosition'])->name('positions.destroy');
 
     Route::post('/interview-slots', [InterviewSlotController::class, 'store'])->name('interview-slots.store');
+    Route::get('/interview-slots/{interviewSlot}/report', [ApplicantController::class, 'interviewSlotReportPdf'])->name('interview-slots.report');
     Route::patch('/interview-slots/{interviewSlot}/toggle', [InterviewSlotController::class, 'toggle'])->name('interview-slots.toggle');
     Route::delete('/interview-slots/{interviewSlot}', [InterviewSlotController::class, 'destroy'])->name('interview-slots.destroy');
 });

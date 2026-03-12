@@ -109,6 +109,53 @@ class ApplicantController extends Controller
         ]);
     }
 
+    public function interviewSlotReportPdf(InterviewSlot $interviewSlot): HttpResponse
+    {
+        $applicants = Applicant::query()
+            ->with('position')
+            ->whereHas('interviews', function ($query) use ($interviewSlot): void {
+                $query->whereDate('interview_date', $interviewSlot->interview_date)
+                    ->where('interview_time', $interviewSlot->interview_time);
+            })
+            ->orderByDesc('created_at')
+            ->get();
+
+        $groupedByPosition = $applicants
+            ->groupBy(fn (Applicant $applicant) => $applicant->position?->name ?: 'Sin cargo')
+            ->map(function ($group) {
+                return $group
+                    ->unique(function (Applicant $applicant) {
+                        $phone = preg_replace('/\D+/', '', (string) ($applicant->primary_phone ?? ''));
+                        $name = mb_strtolower(trim((string) $applicant->full_name));
+
+                        // Unique per position: same phone+name appears once in that position.
+                        return ($phone !== '' ? $phone : 'no-phone') . '|' . $name;
+                    })
+                    ->values();
+            });
+
+        $totalUniqueApplicants = $groupedByPosition->sum(fn ($group) => $group->count());
+
+        $payload = [
+            'interviewSlot' => $interviewSlot,
+            'applicants' => $applicants,
+            'groupedByPosition' => $groupedByPosition,
+            'totalUniqueApplicants' => $totalUniqueApplicants,
+        ];
+
+        if (class_exists(\Barryvdh\DomPDF\Facade\Pdf::class)) {
+            $pdf = app('dompdf.wrapper');
+            $pdf->loadView('pdf.interview-slot-report', $payload)
+                ->setPaper('letter');
+
+            $filename = 'reporte-horario-' . $interviewSlot->id . '.pdf';
+
+            return $pdf->stream($filename);
+        }
+
+        return response()->view('pdf.interview-slot-report', $payload);
+    }
+
     public function edit(Applicant $applicant)
     {
         $applicant->load('attachments');
