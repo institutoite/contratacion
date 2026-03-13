@@ -269,9 +269,20 @@
                                 <td>{{ optional($applicant->application_date)->format('d/m/Y') ?: '-' }}</td>
                                 <td>{{ $applicant->availability_immediate ? 'Si' : 'No' }}</td>
                                 <td>
+                                    @php
+                                        $waRawPhone = $applicant->whatsapp ?: $applicant->primary_phone;
+                                        $waPhone = $waRawPhone ? preg_replace('/\D+/', '', $waRawPhone) : null;
+                                        $waMessage = rawurlencode('Hola ' . ($applicant->full_name ?: '') . ', te escribimos de ITE. Nos dejaste tus datos en nuestro sistema de postulaciones y queremos continuar con tu proceso.');
+                                        $waUrl = $waPhone ? 'https://wa.me/' . $waPhone . '?text=' . $waMessage : 'https://web.whatsapp.com/';
+                                    @endphp
                                     <div class="d-flex gap-1">
                                         <a href="{{ route('applicants.show', $applicant) }}" class="btn btn-sm btn-outline-info">Ver</a>
                                         <a href="{{ route('applicants.print', $applicant) }}" class="btn btn-sm btn-outline-primary" target="_blank">PDF</a>
+                                        <a href="{{ $waUrl }}" class="btn btn-sm btn-success" target="_blank" rel="noopener noreferrer" title="Enviar WhatsApp">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true">
+                                                <path d="M19.11 17.21c-.26-.13-1.53-.75-1.77-.84-.24-.09-.41-.13-.59.13-.18.26-.67.84-.82 1.01-.15.18-.31.2-.57.07-.26-.13-1.09-.4-2.07-1.27-.77-.69-1.28-1.54-1.43-1.8-.15-.26-.02-.4.11-.53.12-.12.26-.31.39-.46.13-.15.18-.26.26-.44.09-.18.04-.33-.02-.46-.07-.13-.59-1.42-.81-1.95-.22-.52-.44-.45-.59-.45-.15-.01-.33-.01-.5-.01-.18 0-.46.07-.7.33-.24.26-.92.9-.92 2.2s.94 2.56 1.07 2.74c.13.18 1.85 2.82 4.49 3.95.63.27 1.12.43 1.5.55.63.2 1.2.17 1.65.1.5-.07 1.53-.63 1.75-1.24.22-.61.22-1.13.15-1.24-.06-.11-.24-.17-.5-.3M16 3C8.83 3 3 8.83 3 16c0 2.28.6 4.51 1.74 6.48L3 29l6.69-1.75A12.96 12.96 0 0 0 16 29c7.17 0 13-5.83 13-13S23.17 3 16 3m0 23.66c-2.07 0-4.1-.56-5.87-1.63l-.42-.25-3.97 1.04 1.06-3.87-.27-.4a10.63 10.63 0 0 1-1.66-5.57c0-5.88 4.79-10.66 10.67-10.66 2.85 0 5.53 1.11 7.55 3.12 2.01 2.02 3.12 4.7 3.12 7.55 0 5.88-4.78 10.67-10.66 10.67"/>
+                                            </svg>
+                                        </a>
                                         <a href="{{ route('applicants.edit', $applicant) }}" class="btn btn-sm btn-outline-secondary">Editar</a>
                                         <form method="POST" action="{{ route('applicants.destroy', $applicant) }}" onsubmit="return confirm('Eliminar postulante?')">
                                             @csrf
